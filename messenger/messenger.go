@@ -5,11 +5,12 @@ import (
 )
 
 type Messenger interface {
-	Start()
 	Name() string
-  AddClient(messageChan chan string)
-  RemoveClient(messageChan chan string)
-  SendMessage(msg string)
+	Start()
+	AddClient(messageChan chan string)
+	RemoveClient(messageChan chan string)
+	SendMessage(msg string)
+	ParseSNS(req string) string
 }
 
 type DefaultMessenger struct {
@@ -45,17 +46,24 @@ func New() Messenger {
 	}
 }
 
+func (this *DefaultMessenger) Name() string {
+	return this.name
+}
+
+func (this *DefaultMessenger) ParseSNS(req string) string {
+	return req
+}
 
 func (this *DefaultMessenger) AddClient(messageChan chan string) {
-  this.newClients <- messageChan
+	this.newClients <- messageChan
 }
 
 func (this *DefaultMessenger) RemoveClient(messageChan chan string) {
-  this.defunctClients <- messageChan
+	this.defunctClients <- messageChan
 }
 
 func (this *DefaultMessenger) SendMessage(msg string) {
-  this.messages <- msg
+	this.messages <- msg
 }
 
 func (this *DefaultMessenger) Start() {
@@ -89,8 +97,4 @@ func (this *DefaultMessenger) Start() {
 			}
 		}
 	}()
-}
-
-func (this *DefaultMessenger) Name() string {
-	return this.name
 }
