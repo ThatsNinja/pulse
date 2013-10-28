@@ -36,13 +36,13 @@ type DefaultMessenger struct {
 	name string
 }
 
-func New() Messenger {
+func New(name string) Messenger {
 	return &DefaultMessenger{
 		make(map[chan string]bool),
 		make(chan (chan string)),
 		make(chan (chan string)),
 		make(chan string),
-		"default_messenger",
+		name,
 	}
 }
 

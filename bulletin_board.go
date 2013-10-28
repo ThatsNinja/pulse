@@ -27,6 +27,8 @@ func (this *BulletinBoard) RegisterMessenger(msger messenger.Messenger) {
 func (this *BulletinBoard) Run() {
 
 	for msger, _ := range this.msgers {
+
+    log.Println("SSE server: listening /messengers/"+msger.Name())
 		http.HandleFunc("/messengers/"+msger.Name(),
 
 			func(resp http.ResponseWriter, req *http.Request) {
@@ -89,6 +91,7 @@ func (this *BulletinBoard) Run() {
 				log.Println("Finished HTTP request at ", req.URL.Path)
 			})
 
+    log.Println("SNS endpoint: listening /sns/"+msger.Name())
 		http.HandleFunc("/sns/"+msger.Name(),
 
 			func(resp http.ResponseWriter, req *http.Request) {
@@ -101,5 +104,6 @@ func (this *BulletinBoard) Run() {
 		msger.Start()
 	}
 
+  log.Println("HTTP server port "+this.port)
 	http.ListenAndServe(this.port, nil)
 }
