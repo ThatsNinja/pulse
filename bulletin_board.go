@@ -20,14 +20,14 @@ func New(port string) *BulletinBoard {
 	}
 }
 
-func (this *BulletinBoard) RegisterBroker(msger messenger.Messenger) {
+func (this *BulletinBoard) RegisterMessenger(msger messenger.Messenger) {
 	this.msgers[msger] = true
 }
 
 func (this *BulletinBoard) Run() {
 
 	for msger, _ := range this.msgers {
-		http.HandleFunc("/brokers/"+msger.Name(),
+		http.HandleFunc("/messengers/"+msger.Name(),
 
 			func(resp http.ResponseWriter, req *http.Request) {
 				// Make sure that the writer supports flushing.

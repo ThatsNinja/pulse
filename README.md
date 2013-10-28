@@ -10,7 +10,16 @@ A [AWS SNS](http://aws.amazon.com/sns/) and SSE(server side) integration library
 go get github.com/lazywei/bulletin_board
 ```
 
+##Features
+
+- Auto confirm SNS subscribing
+- Auto parse SNS notification
+- Built-in http server for SNS request and SSE connection
+- Auto send notification to SSE client
+
 ##Usage
+
+//TODO
 
 ##Contact
 
@@ -20,7 +29,6 @@ Bert Chang
 
 ##TODO
 
-- SNS request parsing
 - SNS signature verification
 - SNS confirmation
 - examples
