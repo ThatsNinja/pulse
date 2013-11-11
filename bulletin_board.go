@@ -24,11 +24,11 @@ func (this *BulletinBoard) RegisterMessenger(msger messenger.Messenger) {
 	this.msgers[msger] = true
 }
 
-func (this *BulletinBoard) Run() {
+func (this *BulletinBoard) Run(allowCrossDomain bool) {
 
 	for msger, _ := range this.msgers {
 
-    log.Println("SSE server: listening /messengers/"+msger.Name())
+		log.Println("SSE server: listening /messengers/" + msger.Name())
 		http.HandleFunc("/messengers/"+msger.Name(),
 
 			func(resp http.ResponseWriter, req *http.Request) {
@@ -65,6 +65,9 @@ func (this *BulletinBoard) Run() {
 				resp.Header().Set("Content-Type", "text/event-stream")
 				resp.Header().Set("Cache-Control", "no-cache")
 				resp.Header().Set("Connection", "keep-alive")
+				if allowCrossDomain {
+          resp.Header().Set("Access-Control-Allow-Origin", "*")
+        }
 
 				// Use the CloseNotifier interface
 				// https://code.google.com/p/go/source/detail?name=3292433291b2
@@ -91,7 +94,7 @@ func (this *BulletinBoard) Run() {
 				log.Println("Finished HTTP request at ", req.URL.Path)
 			})
 
-    log.Println("SNS endpoint: listening /sns/"+msger.Name())
+		log.Println("SNS endpoint: listening /sns/" + msger.Name())
 		http.HandleFunc("/sns/"+msger.Name(),
 
 			func(resp http.ResponseWriter, req *http.Request) {
@@ -104,6 +107,6 @@ func (this *BulletinBoard) Run() {
 		msger.Start()
 	}
 
-  log.Println("HTTP server port "+this.port)
+	log.Println("HTTP server port " + this.port)
 	http.ListenAndServe(this.port, nil)
 }
