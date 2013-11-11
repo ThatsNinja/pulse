@@ -66,8 +66,8 @@ func (this *BulletinBoard) Run(allowCrossDomain bool) {
 				resp.Header().Set("Cache-Control", "no-cache")
 				resp.Header().Set("Connection", "keep-alive")
 				if allowCrossDomain {
-          resp.Header().Set("Access-Control-Allow-Origin", "*")
-        }
+					resp.Header().Set("Access-Control-Allow-Origin", "*")
+				}
 
 				// Use the CloseNotifier interface
 				// https://code.google.com/p/go/source/detail?name=3292433291b2
@@ -82,7 +82,7 @@ func (this *BulletinBoard) Run(allowCrossDomain bool) {
 				for {
 					select {
 					case msg := <-messageChan:
-						fmt.Fprintf(resp, "data: Message: %s\n\n", msg)
+						fmt.Fprintf(resp, "data: %s\n\n", msg)
 						f.Flush()
 					case <-closer:
 						log.Println("Closing connection")
