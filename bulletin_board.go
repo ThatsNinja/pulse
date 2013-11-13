@@ -1,30 +1,30 @@
-package bulletin_board
+package pulse
 
 import (
 	"fmt"
-	"github.com/lazywei/bulletin_board/messenger"
-	"github.com/lazywei/bulletin_board/sns"
+	"github.com/polydice/pulse/messenger"
+	"github.com/polydice/pulse/sns"
 	"log"
 	"net/http"
 )
 
-type BulletinBoard struct {
+type Pump struct {
 	msgers map[messenger.Messenger]bool
 	port   string
 }
 
-func New(port string) *BulletinBoard {
-	return &BulletinBoard{
+func New(port string) *Pump {
+	return &Pump{
 		msgers: make(map[messenger.Messenger]bool),
 		port:   port,
 	}
 }
 
-func (this *BulletinBoard) RegisterMessenger(msger messenger.Messenger) {
+func (this *Pump) RegisterMessenger(msger messenger.Messenger) {
 	this.msgers[msger] = true
 }
 
-func (this *BulletinBoard) Run(allowCrossDomain bool) {
+func (this *Pump) Start(allowCrossDomain bool) {
 
 	for msger, _ := range this.msgers {
 
