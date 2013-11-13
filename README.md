@@ -1,4 +1,4 @@
-Bulletin Board
+Pulse
 ==============
 
 A [AWS SNS](http://aws.amazon.com/sns/)(endpoint) and SSE(server side) integration library written in GO
@@ -7,7 +7,7 @@ A [AWS SNS](http://aws.amazon.com/sns/)(endpoint) and SSE(server side) integrati
 ##Install
 
 ```
-go get github.com/lazywei/bulletin_board
+go get github.com/polydice/pulse
 ```
 
 ##Features
@@ -23,29 +23,23 @@ go get github.com/lazywei/bulletin_board
 package main
 
 import (
-	"github.com/lazywei/bulletin_board"
-	"github.com/lazywei/bulletin_board/messenger"
+	"github.com/polydice/pulse"
+	"github.com/polydice/pulse/messenger"
 )
 
 func main() {
 
-	board := bulletin_board.New(":8000")
+	pump := pulse.New(":8000")
 
 	latestTopicMsger := messenger.New("latest_topic")
-	board.RegisterMessenger(latestTopicMsger)
+	pump.RegisterMessenger(latestTopicMsger)
 
 	latestCommentMsger := messenger.New("latest_comment")
-	board.RegisterMessenger(latestCommentMsger)
+	pump.RegisterMessenger(latestCommentMsger)
 
-	board.Run()
+	pump.Start()
 }
 ```
-
-##Contact
-
-Bert Chang
-
-- Twitter https://twitter.com/jrweizhang
 
 ##TODO
 
