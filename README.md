@@ -12,6 +12,7 @@ go get github.com/polydice/pulse
 
 ##Features
 
+- Works out of the box, without any configuration
 - Auto confirm SNS subscribing
 - Auto parse SNS notification
 - Built-in http server for SNS request and SSE connection
@@ -24,25 +25,27 @@ package main
 
 import (
 	"github.com/polydice/pulse"
-	"github.com/polydice/pulse/messenger"
 )
 
 func main() {
-
 	pump := pulse.New(":8000")
-
-	latestTopicMsger := messenger.New("latest_topic")
-	pump.RegisterMessenger(latestTopicMsger)
-
-	latestCommentMsger := messenger.New("latest_comment")
-	pump.RegisterMessenger(latestCommentMsger)
-
-	pump.Start()
+	pump.Start(true) // Allow cross domain or not.
 }
+```
+
+Then subscribe `/publish/any_event_name_you_want` to your AWS SNS http endpoint.
+Now there is a SSE server on `/publish/any_event_name_you_want`, example usage:
+
+```javascript
+var source = new EventSource('http://localhost:8000/subscribe/any_event_name_you_want');
+
+// Create a callback for when a new message is received.
+source.onmessage = function(e) {
+  console.log(e.data)
+};
 ```
 
 ##TODO
 
 - SNS signature verification
 - examples
-
