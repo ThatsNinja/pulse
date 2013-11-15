@@ -28,7 +28,7 @@ func (this *Pump) RegisterMessenger(name string, msger messenger.Messenger) {
 func (this *Pump) Start(allowCrossDomain bool) {
 
 	r := mux.NewRouter()
-	r.HandleFunc("/publish/{event}", func(resp http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/subscribe/{event}", func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		name := vars["event"]
 
@@ -101,7 +101,7 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		log.Println("Finished HTTP request at ", req.URL.Path)
 	})
 
-	r.HandleFunc("/subscribe/{event}", func(resp http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/publish/{event}", func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		name := vars["event"]
 
@@ -109,8 +109,8 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		if this.msgers[name] == nil {
 			msger = messenger.New(name)
 			this.RegisterMessenger(name, msger)
-			log.Println("SNS endpoint: listening /subscribe/" + msger.Name())
-			log.Println("SSE endpoint: listening /publish/" + msger.Name())
+			log.Println("SNS endpoint: listening /publish/" + msger.Name())
+			log.Println("SSE endpoint: listening /subscribe/" + msger.Name())
 			msger.Start()
 		} else {
 			msger = this.msgers[name]
