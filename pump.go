@@ -28,16 +28,14 @@ func (this *Pump) RegisterMessenger(name string, msger messenger.Messenger) {
 func (this *Pump) Start(allowCrossDomain bool) {
 
 	r := mux.NewRouter()
-	r.HandleFunc("/subscribe/{messenger}", func(resp http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/publish/{event}", func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
-		name := vars["messenger"]
+		name := vars["event"]
 
 		var msger messenger.Messenger
 		if this.msgers[name] == nil {
-			msger = messenger.New(name)
-			this.RegisterMessenger(name, msger)
-			log.Println("SSE server: start listening /subscribe/" + msger.Name())
-			msger.Start()
+			http.Error(resp, "You need to subscribe this endpoint to AWS SNS.", http.StatusNotFound)
+			return
 		} else {
 			msger = this.msgers[name]
 		}
@@ -46,13 +44,12 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		//
 		f, ok := resp.(http.Flusher)
 		if !ok {
-			http.Error(resp, "Streaming unsupported!", http.StatusInternalServerError)
+			http.Error(resp, "Streaming unsupported", http.StatusInternalServerError)
 			return
 		}
 		c, ok := resp.(http.CloseNotifier)
 		if !ok {
-			http.Error(resp, "close notification unsupported",
-				http.StatusInternalServerError)
+			http.Error(resp, "Close notification unsupported", http.StatusInternalServerError)
 			return
 		}
 		closer := c.CloseNotify()
@@ -104,15 +101,16 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		log.Println("Finished HTTP request at ", req.URL.Path)
 	})
 
-	r.HandleFunc("/publish/{messenger}", func(resp http.ResponseWriter, req *http.Request) {
+	r.HandleFunc("/subscribe/{event}", func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
-		name := vars["messenger"]
+		name := vars["event"]
 
 		var msger messenger.Messenger
 		if this.msgers[name] == nil {
 			msger = messenger.New(name)
 			this.RegisterMessenger(name, msger)
-			log.Println("SNS endpoint: start listening /publish/" + msger.Name())
+			log.Println("SNS endpoint: listening /subscribe/" + msger.Name())
+			log.Println("SSE endpoint: listening /publish/" + msger.Name())
 			msger.Start()
 		} else {
 			msger = this.msgers[name]

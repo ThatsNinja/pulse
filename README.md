@@ -33,11 +33,11 @@ func main() {
 }
 ```
 
-Then subscribe `/publish/any_event_name_you_want` to your AWS SNS http endpoint.
+Then subscribe `/subscribe/any_event_name_you_want` to your AWS SNS http endpoint.
 Now there is a SSE server on `/publish/any_event_name_you_want`, example usage:
 
 ```javascript
-var source = new EventSource('http://localhost:8000/subscribe/any_event_name_you_want');
+var source = new EventSource('http://localhost:8000/publish/any_event_name_you_want');
 
 // Create a callback for when a new message is received.
 source.onmessage = function(e) {
