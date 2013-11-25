@@ -5,23 +5,23 @@ import (
 	"log"
 	"net/http"
 	"testing"
-	. "github.com/smartystreets/goconvey/convey"
-	"launchpad.net/gocheck"
+	"github.com/smartystreets/goconvey/convey"
+	. "launchpad.net/gocheck"
 )
 
 // Hook up gocheck into the "go test" runner.
 func Test(t *testing.T) {
-	gocheck.TestingT(t)
+	TestingT(t)
 }
 
-var _ = gocheck.Suite(&RequestSuite{})
+var _ = Suite(&S{})
 
-type RequestSuite struct {
+type S struct {
 	request              *http.Request
 	expectedNotification *Notification
 }
 
-func (self *RequestSuite) SetUpTest(c *gocheck.C) {
+func (self *S) SetUpTest(c *C) {
 	body := `{
   "Type" : "Notification",
   "MessageId" : "da41e39f-ea4d-435a-b922-c6aae3915ebe",
@@ -57,25 +57,25 @@ func (self *RequestSuite) SetUpTest(c *gocheck.C) {
 	}
 }
 
-func (self *RequestSuite) TestNewFromRequest(c *gocheck.C) {
-	Convey("Parse SNS POST request into Notification struct", c, func() {
+func (self *S) TestNewFromRequest(c *C) {
+	convey.Convey("Parse SNS POST request into Notification struct", c, func() {
 
 		req := self.request
 
 		notification := NewFromRequest(req)
 		expectedNotification := self.expectedNotification
 
-		So(notification, ShouldHaveSameTypeAs, expectedNotification)
-		So(notification.Type, ShouldEqual, expectedNotification.Type)
-		So(notification.MessageId, ShouldEqual, expectedNotification.MessageId)
-		So(notification.TopicArn, ShouldEqual, expectedNotification.TopicArn)
-		So(notification.Subject, ShouldEqual, expectedNotification.Subject)
-		So(notification.Message, ShouldEqual, expectedNotification.Message)
-		So(notification.Timestamp, ShouldEqual, expectedNotification.Timestamp)
-		So(notification.SignatureVersion, ShouldEqual, expectedNotification.SignatureVersion)
-		So(notification.Signature, ShouldEqual, expectedNotification.Signature)
-		So(notification.SigningCertURL, ShouldEqual, expectedNotification.SigningCertURL)
-		So(notification.UnsubscribeURL, ShouldEqual, expectedNotification.UnsubscribeURL)
+		convey.So(notification, convey.ShouldHaveSameTypeAs, expectedNotification)
+		convey.So(notification.Type, convey.ShouldEqual, expectedNotification.Type)
+		convey.So(notification.MessageId, convey.ShouldEqual, expectedNotification.MessageId)
+		convey.So(notification.TopicArn, convey.ShouldEqual, expectedNotification.TopicArn)
+		convey.So(notification.Subject, convey.ShouldEqual, expectedNotification.Subject)
+		convey.So(notification.Message, convey.ShouldEqual, expectedNotification.Message)
+		convey.So(notification.Timestamp, convey.ShouldEqual, expectedNotification.Timestamp)
+		convey.So(notification.SignatureVersion, convey.ShouldEqual, expectedNotification.SignatureVersion)
+		convey.So(notification.Signature, convey.ShouldEqual, expectedNotification.Signature)
+		convey.So(notification.SigningCertURL, convey.ShouldEqual, expectedNotification.SigningCertURL)
+		convey.So(notification.UnsubscribeURL, convey.ShouldEqual, expectedNotification.UnsubscribeURL)
 	})
 
 }

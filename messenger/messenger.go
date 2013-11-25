@@ -10,7 +10,6 @@ type Messenger interface {
 	AddClient(messageChan chan string)
 	RemoveClient(messageChan chan string)
 	SendMessage(msg string)
-	ParseSNS(req string) string
 }
 
 type DefaultMessenger struct {
@@ -48,10 +47,6 @@ func New(name string) Messenger {
 
 func (this *DefaultMessenger) Name() string {
 	return this.name
-}
-
-func (this *DefaultMessenger) ParseSNS(req string) string {
-	return req
 }
 
 func (this *DefaultMessenger) AddClient(messageChan chan string) {
