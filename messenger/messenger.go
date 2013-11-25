@@ -4,15 +4,7 @@ import (
 	"log"
 )
 
-type Messenger interface {
-	Name() string
-	Start()
-	AddClient(messageChan chan string)
-	RemoveClient(messageChan chan string)
-	SendMessage(msg string)
-}
-
-type DefaultMessenger struct {
+type Messenger struct {
 	// Create a map of clients, the keys of the map are the channels
 	// over which we can push messages to attached clients. (The values
 	// are just booleans and are meaningless.)
@@ -35,33 +27,35 @@ type DefaultMessenger struct {
 	name string
 }
 
-func New(name string) Messenger {
-	return &DefaultMessenger{
+func New(name string) *Messenger {
+  m := &Messenger{
 		make(map[chan string]bool),
 		make(chan (chan string)),
 		make(chan (chan string)),
 		make(chan string),
 		name,
 	}
+	m.start()
+	return m
 }
 
-func (this *DefaultMessenger) Name() string {
+func (this *Messenger) Name() string {
 	return this.name
 }
 
-func (this *DefaultMessenger) AddClient(messageChan chan string) {
+func (this *Messenger) AddClient(messageChan chan string) {
 	this.newClients <- messageChan
 }
 
-func (this *DefaultMessenger) RemoveClient(messageChan chan string) {
+func (this *Messenger) RemoveClient(messageChan chan string) {
 	this.defunctClients <- messageChan
 }
 
-func (this *DefaultMessenger) SendMessage(msg string) {
+func (this *Messenger) SendMessage(msg string) {
 	this.messages <- msg
 }
 
-func (this *DefaultMessenger) Start() {
+func (this *Messenger) start() {
 
 	go func() {
 		for {

@@ -2,26 +2,26 @@ package pulse
 
 import (
 	"fmt"
+	"log"
+	"net/http"
 	"github.com/gorilla/mux"
 	"github.com/polydice/pulse/messenger"
 	"github.com/polydice/pulse/sns"
-	"log"
-	"net/http"
 )
 
 type Pump struct {
-	msgers map[string]messenger.Messenger
+	msgers map[string]*messenger.Messenger
 	port   string
 }
 
 func New(port string) *Pump {
 	return &Pump{
-		msgers: make(map[string]messenger.Messenger),
+		msgers: make(map[string]*messenger.Messenger),
 		port:   port,
 	}
 }
 
-func (this *Pump) RegisterMessenger(name string, msger messenger.Messenger) {
+func (this *Pump) RegisterMessenger(name string, msger *messenger.Messenger) {
 	this.msgers[name] = msger
 }
 
@@ -32,7 +32,7 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		vars := mux.Vars(req)
 		name := vars["event"]
 
-		var msger messenger.Messenger
+		var msger *messenger.Messenger
 		if this.msgers[name] == nil {
 			http.Error(resp, "You need to subscribe this endpoint to AWS SNS.", http.StatusNotFound)
 			return
@@ -105,13 +105,12 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		vars := mux.Vars(req)
 		name := vars["event"]
 
-		var msger messenger.Messenger
+		var msger *messenger.Messenger
 		if this.msgers[name] == nil {
 			msger = messenger.New(name)
 			this.RegisterMessenger(name, msger)
 			log.Println("SNS endpoint: listening /publish/" + msger.Name())
 			log.Println("SSE endpoint: listening /subscribe/" + msger.Name())
-			msger.Start()
 		} else {
 			msger = this.msgers[name]
 		}
