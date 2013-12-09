@@ -21,23 +21,65 @@ func New(port string) *Pump {
 	}
 }
 
-func (this *Pump) RegisterMessenger(name string, msger *messenger.Messenger) {
-	this.msgers[name] = msger
+func (self *Pump) RegisterMessenger(name string, msger *messenger.Messenger) {
+	self.msgers[name] = msger
 }
 
-func (this *Pump) Start(allowCrossDomain bool) {
+
+func (self *Pump) Start(allowCrossDomain bool) {
 
 	r := mux.NewRouter()
-	r.HandleFunc("/subscribe/{event}", func(resp http.ResponseWriter, req *http.Request) {
+  r.HandleFunc("/subscribe/{event}", func(resp http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+		event := vars["event"]
+
+    self.runMsger(event, resp, allowCrossDomain)
+
+		// Done.
+		log.Println("Finished HTTP request at ", req.URL.Path)
+	})
+
+  r.HandleFunc("/subscribe/{event}/{id:[0-9]}+", func(resp http.ResponseWriter, req *http.Request) {
+		vars := mux.Vars(req)
+		event := vars["event"]
+		eventId := vars["id"]
+    msgerName := fmt.Sprintf("%v.%v", event, eventId)
+
+    self.runMsger(msgerName, resp, allowCrossDomain)
+
+		// Done.
+		log.Println("Finished HTTP request at ", req.URL.Path)
+	})
+
+	r.HandleFunc("/publish/{event}", func(resp http.ResponseWriter, req *http.Request) {
 		vars := mux.Vars(req)
 		name := vars["event"]
 
 		var msger *messenger.Messenger
-		if this.msgers[name] == nil {
-			http.Error(resp, "You need to subscribe this endpoint to AWS SNS.", http.StatusNotFound)
+		if self.msgers[name] == nil {
+			msger = messenger.New(name)
+			self.RegisterMessenger(name, msger)
+			log.Println("SNS endpoint: listening /publish/" + msger.Name())
+			log.Println("SSE endpoint: listening /subscribe/" + msger.Name())
+		} else {
+			msger = self.msgers[name]
+		}
+
+		n := sns.NewFromRequest(req)
+		msger.SendMessage(n.Message)
+	})
+
+	log.Println("HTTP server port " + self.port)
+	http.ListenAndServe(self.port, r)
+}
+
+func (self *Pump) runMsger(msgerName string, resp http.ResponseWriter, allowCrossDomain bool) {
+		var msger *messenger.Messenger
+		if self.msgers[msgerName] == nil {
+			http.Error(resp, "You need to subscribe self endpoint to AWS SNS.", http.StatusNotFound)
 			return
 		} else {
-			msger = this.msgers[name]
+			msger = self.msgers[msgerName]
 		}
 
 		// Make sure that the writer supports flushing.
@@ -55,14 +97,14 @@ func (this *Pump) Start(allowCrossDomain bool) {
 		closer := c.CloseNotify()
 
 		// Create a new channel, over which the broker can
-		// send this client messages.
+		// send self client messages.
 		messageChan := make(chan string)
 
-		// Add this client to the map of those that should
+		// Add self client to the map of those that should
 		// receive updates
 		msger.AddClient(messageChan)
 
-		// Remove this client from the map of attached clients
+		// Remove self client from the map of attached clients
 		// when `EventHandler` exits.
 		defer func() {
 			msger.RemoveClient(messageChan)
@@ -96,29 +138,4 @@ func (this *Pump) Start(allowCrossDomain bool) {
 				return
 			}
 		}
-
-		// Done.
-		log.Println("Finished HTTP request at ", req.URL.Path)
-	})
-
-	r.HandleFunc("/publish/{event}", func(resp http.ResponseWriter, req *http.Request) {
-		vars := mux.Vars(req)
-		name := vars["event"]
-
-		var msger *messenger.Messenger
-		if this.msgers[name] == nil {
-			msger = messenger.New(name)
-			this.RegisterMessenger(name, msger)
-			log.Println("SNS endpoint: listening /publish/" + msger.Name())
-			log.Println("SSE endpoint: listening /subscribe/" + msger.Name())
-		} else {
-			msger = this.msgers[name]
-		}
-
-		n := sns.NewFromRequest(req)
-		msger.SendMessage(n.Message)
-	})
-
-	log.Println("HTTP server port " + this.port)
-	http.ListenAndServe(this.port, r)
 }
