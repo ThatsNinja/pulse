@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
@@ -147,7 +148,7 @@ func (self *Pump) runMsger(msgerName string, resp http.ResponseWriter, allowCros
 
 func (self *Pump) subscribeRedis(channel string, msger *messenger.Messenger) {
 
-	c, err := redis.Dial("tcp", ":6379")
+	c, err := redis.Dial("tcp", os.Getenv("REDIS_ADDR"))
 	if err != nil {
 		panic(err)
 	}
